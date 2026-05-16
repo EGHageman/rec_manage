@@ -1,0 +1,3 @@
+FLASK_APP=src
+FLASK_RUN_HOST=0.0.0.0
+SECRET_KEY=super_secret
