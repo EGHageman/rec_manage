@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Sign In</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+  body {
+    background-color: #ffffff;
+  }
+  h2 {
+    color: #333333;
+    text-align: center;
+  }
+</style>
+
+<body class="p-4">
+  <h2 class="mb-4">Business Sign In</h2>
+
+  <div id="messageAlert" class="alert d-none"></div>
+
+  <form id="signinForm">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="UserName" class="form-label">UserName</label>
+        <input type="text" class="form-control" id="UserName" placeholder="bob" required>
+      </div>
+      <div class="col-md-6">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Password" required>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Sign In</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('signinForm');
+    const alert = document.getElementById('messageAlert');
+
+    function showAlert(message, type) {
+      alert.textContent = message;
+      alert.className = `alert alert-${type}`;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const manager_name = document.getElementById('UserName').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_name, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'ok') {
+          showAlert(data.message, 'success');
+          window.location.href = data.redirect;
+        } else {
+          showAlert(data.message || 'Sign in failed.', 'danger');
+        }
+      } catch (err) {
+        showAlert('Network error. Please try again.', 'danger');
+      }
+    });
+  </script>
+</body>
+</html>

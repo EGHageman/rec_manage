@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="p-4">
+    <h2 class="mb-4">Employee Sign Up</h2>
+
+    <div id="messageAlert" class="alert"></div>
+
+    <form id="signupForm">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="firstName" placeholder="bob" required>
+            </div>
+            <div class="col-md-6">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" placeholder="smith" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+            <label for="profilePicture" class="form-label">Profile Picture</label>
+            <input type="file" class="form-control" id="profilePicture" accept="image/*">
+        </div>
+        <div class="mb-3">
+            <label for="inviteCode" class="form-label">Invite Code</label>
+            <input type="text" class="form-control" id="inviteCode" placeholder="Enter your invite code" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Sign Up</button>
+    </form>
+
+    <script>
+        function showAlert(message, type) {
+            const alert = document.getElementById('messageAlert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const password = document.getElementById('password').value;
+            const inviteCode = document.getElementById('inviteCode').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            const formData = new FormData();
+            formData.append('first_name', firstName);
+            formData.append('last_name', lastName);
+            formData.append('password', password);
+            formData.append('invite_code', inviteCode);
+            const picture = document.getElementById('profilePicture').files[0];
+            if (picture) formData.append('profile_picture', picture);
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing up...';
+
+            try {
+                const res = await fetch('/employee_signup', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === 'ok') {
+                    showAlert(`Welcome ${firstName}! You have been added successfully.`, 'success');
+                    document.getElementById('signupForm').reset();
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/employee_map';
+                    }, 1200);
+                } else {
+                    showAlert(data.message || 'Sign up failed. Please try again.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error during sign up:', error);
+                showAlert('An unexpected error occurred. Please try again.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign Up';
+            }
+        });
+    </script>
+</body>
+
+</html>

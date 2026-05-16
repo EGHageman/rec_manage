@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Sign Up</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+
+
+<body class="p-4">
+  <h2 class="mb-4">Business Sign Up</h2>
+  
+  <div id="messageAlert" class="alert"></div>
+  
+  <form id="signupForm">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="managerName" class="form-label">Manager Name</label>
+        <input type="text" class="form-control" id="managerName" placeholder="john bob" required>
+      </div>
+      <div class="col-md-6">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Password" required>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="coordinates" class="form-label">Address (lat,lng)</label>
+      <input type="text" class="form-control" id="coordinates" placeholder="44.5, -110.5" required>
+      <small class="form-text text-muted">Enter coordinates as: latitude,longitude (e.g., 44.5,-110.5)</small>
+    </div>
+    <div class="mb-3">
+      <label for="businessName" class="form-label">Organization Name</label>
+      <input type="text" class="form-control" id="businessName" placeholder="Acme Corporation" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Sign Up</button>
+  </form>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const managerName = document.getElementById('managerName').value;
+      const businessName = document.getElementById('businessName').value;
+      const coordinates = document.getElementById('coordinates').value;
+      const messageAlert = document.getElementById('messageAlert');
+      
+      try {
+        const response = await fetch('/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            manager_name: managerName,
+            password: document.getElementById('password').value,
+            business_name: businessName,
+            address: coordinates
+          })
+        });
+        
+        const data = await response.json();
+        
+        messageAlert.classList.remove('alert-danger', 'alert-success');
+        messageAlert.classList.add('show');
+        
+        if (response.ok && data.status === 'ok') {
+          messageAlert.classList.add('alert-success');
+          messageAlert.innerHTML = `<strong>Success!</strong> ${data.message}. Business ID: ${data.business_id}`;
+          document.getElementById('signupForm').reset();
+          setTimeout(() => {
+            window.location.href = data.redirect || '/';
+          }, 1500);
+        } else {
+          messageAlert.classList.add('alert-danger');
+          messageAlert.innerHTML = `<strong>Error!</strong> ${data.message || 'Failed to create business'}`;
+        }
+      } catch (error) {
+        messageAlert.classList.remove('alert-success');
+        messageAlert.classList.add('alert-danger', 'show');
+        messageAlert.innerHTML = `<strong>Error!</strong> ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
